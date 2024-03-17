@@ -16,10 +16,7 @@ RUN set -x && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     "${KEPT_PACKAGES[@]}" \
-    "${TEMP_PACKAGES[@]}" \
-    && true
-
-RUN set -x && \
+    "${TEMP_PACKAGES[@]}" && \
     git clone https://github.com/altillimity/satdump.git /src/satdump && \
     pushd /src/satdump && \
     sed -i '/zenity/d' packages.runner && \
@@ -28,12 +25,9 @@ RUN set -x && \
     mkdir build && \
     pushd build && \
     cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF -DBUILD_ZIQ=OFF .. && \
-    make && \
+    make -j`nproc` && \
     make install && \
     popd && popd && \
-    true
-
-RUN set -x && \
     xargs -a /src/satdump/packages.builder apt purge -qy && \
     # Clean up
     apt-get remove -y "${TEMP_PACKAGES[@]}" && \
