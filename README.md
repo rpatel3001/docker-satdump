@@ -6,6 +6,12 @@ A Docker image with satdump installed. Currently it runs an arbitrary command on
 
 Under active development, everything is subject to change without notice.
 
+You can view only ACARS message in the log with:
+
+```
+docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Reserved 0x" | grep -v "Channel" | grep -v "Packet" | grep -v "Progress"
+```
+
 ---
 
 ## Environment Variables
