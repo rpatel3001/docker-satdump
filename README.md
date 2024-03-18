@@ -4,6 +4,8 @@
 
 A Docker image with satdump installed. Currently it runs an arbitrary command on startup, but that will change in the future.
 
+There is a python script also run at startup which takes the satdump UDP JSON messages and reformats them as acarshub compatible JSON.
+
 Under active development, everything is subject to change without notice.
 
 You can view only ACARS message in the log with:
@@ -19,6 +21,7 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `RUN_CMD`   | The command to run when the container starts. The container will restart when it returns. | Unset |
+| `JSON_OUT`   | The `host:port` to forward reformatted JSON messages to. | `acars_router:5550` |
 
 ## Docker Compose
 
@@ -38,8 +41,37 @@ services:
       - ./vfo.json:/vfo.json
       - ./Inmarsat.json:/usr/share/satdump/pipelines/Inmarsat.json
     environment:
-      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.552e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
-#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.552e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
+      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
+#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
+
+  acarshubsat:
+    image: ghcr.io/sdr-enthusiasts/docker-acarshub:latest
+    container_name: acarshubsat
+    restart: always
+    ports:
+      - 8000:80
+    tmpfs:
+      - /database:exec,size=64M
+      - /run:exec,size=64M
+      - /var/log:size=64M
+    environment:
+      - TZ=America/New_York
+      - ENABLE_ACARS=external
+      - MIN_LOG_LEVEL=3
+
+  acars_router:
+    image: ghcr.io/sdr-enthusiasts/acars_router:latest
+    container_name: acars_router
+    restart: always
+    environment:
+      - TZ=America/New_York
+      - AR_SEND_UDP_ACARS=acarshubsat:5550
+    tmpfs:
+      - /run:exec,size=64M
+      - /var/log
+
+
+
 ```
 
 The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
@@ -48,74 +80,98 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
 
 ```
 {
-	"vfo1": {
-		"frequency": 1545023110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo2": {
-		"frequency": 1545053110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo3": {
-		"frequency": 1545063110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo4": {
-		"frequency": 1545068110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo5": {
-		"frequency": 1545078260,
-		"pipeline": "inmarsat_aero_12"
-	},
-	"vfo6": {
-		"frequency": 1545083110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo7": {
-		"frequency": 1545088110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo8": {
-		"frequency": 1545093110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo9": {
-		"frequency": 1545103110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo10": {
-		"frequency": 1545113110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo11": {
-		"frequency": 1545173110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo12": {
-		"frequency": 1545178110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo13": {
-		"frequency": 1545208110,
-		"pipeline": "inmarsat_aero_6"
-	},
-	"vfo14": {
-		"frequency": 1546008660,
-		"pipeline": "inmarsat_aero_105"
-	},
-	"vfo15": {
-		"frequency": 1546023660,
-		"pipeline": "inmarsat_aero_105"
-	},
-	"vfo16": {
-		"frequency": 1546066110,
-		"pipeline": "inmarsat_aero_105"
-	},
-	"vfo17": {
-		"frequency": 1546081660,
-		"pipeline": "inmarsat_aero_105"
-	}
+        "vfo1": {
+                "frequency": 1545018800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo2": {
+                "frequency": 1545023800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo3": {
+                "frequency": 1545028800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo4": {
+                "frequency": 1545033800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo5": {
+                "frequency": 1545038800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo6": {
+                "frequency": 1545043800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo7": {
+                "frequency": 1545053800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo8": {
+                "frequency": 1545063800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo9": {
+                "frequency": 1545068800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo10": {
+                "frequency": 1545078800,
+                "pipeline": "inmarsat_aero_12"
+        },
+        "vfo11": {
+                "frequency": 1545083800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo12": {
+                "frequency": 1545088800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo13": {
+                "frequency": 1545093800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo14": {
+                "frequency": 1545103800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo15": {
+                "frequency": 1545113800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo16": {
+                "frequency": 1545173800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo18": {
+                "frequency": 1545178800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo19": {
+                "frequency": 1545198800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo20": {
+                "frequency": 1545208800,
+                "pipeline": "inmarsat_aero_6"
+        },
+        "vfo21": {
+                "frequency": 1546008800,
+                "pipeline": "inmarsat_aero_105"
+        },
+        "vfo22": {
+                "frequency": 1546023800,
+                "pipeline": "inmarsat_aero_105"
+        },
+        "vfo23": {
+                "frequency": 1546066300,
+                "pipeline": "inmarsat_aero_105"
+        },
+        "vfo24": {
+                "frequency": 1546081300,
+                "pipeline": "inmarsat_aero_105"
+        }
 }
 ```
 
@@ -158,10 +214,10 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
             "msg": {
                 "inmarsat_stdc_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYYY-IMSL-98W-STDC",
+                    "station_id": "XX-YYY-IMSL-98W-STDC",
                     "udp_sinks": {
                         "test": {
-                            "address": "10.0.0.114",
+                            "address": "127.0.0.1",
                             "port": 5556
                         }
                     }
@@ -206,10 +262,10 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYYY-IMSL-98W-AERO6",
+                    "station_id": "XX-YYY-IMSL-98W-AERO6",
                     "udp_sinks": {
                         "test": {
-                            "address": "10.0.0.114",
+                            "address": "127.0.0.1",
                             "port": 5556
                         }
                     }
@@ -253,10 +309,10 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYYY-IMSL-98W-AERO12",
+                    "station_id": "XX-YYY-IMSL-98W-AERO12",
                     "udp_sinks": {
                         "test": {
-                            "address": "10.0.0.114",
+                            "address": "127.0.0.1",
                             "port": 5556
                         }
                     }
@@ -303,10 +359,10 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYYY-IMSL-98W-AERO105",
+                    "station_id": "XX-YYY-IMSL-98W-AERO105",
                     "udp_sinks": {
                         "test": {
-                            "address": "10.0.0.114",
+                            "address": "127.0.0.1",
                             "port": 5556
                         }
                     }
@@ -357,10 +413,10 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                 "inmarsat_aero_parser": {
                     "is_c": true,
                     "save_files": false,
-                    "station_id": "XX-YYYY-IMSL-98W-AERO84",
+                    "station_id": "XX-YYY-IMSL-98W-AERO84",
                     "udp_sinks": {
                         "test": {
-                            "address": "10.0.0.114",
+                            "address": "127.0.0.1",
                             "port": 5556
                         }
                     }

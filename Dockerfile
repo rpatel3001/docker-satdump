@@ -13,6 +13,8 @@ RUN set -x && \
     TEMP_PACKAGES+=(libjemalloc-dev) && \
     # keep
     KEPT_PACKAGES+=(libtiff6) && \
+    KEPT_PACKAGES+=(python3) && \
+    KEPT_PACKAGES+=(python3-prctl) && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
     "${KEPT_PACKAGES[@]}" \
