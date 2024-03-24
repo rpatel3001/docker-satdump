@@ -4,4 +4,5 @@
 # shellcheck disable=SC1091
 #sleep 86400
 echo "starting JSON reformatter"
-exec python3 -u /etc/scripts/reformat.py 2>&1
+
+exec python3 -u /etc/scripts/reformat.py

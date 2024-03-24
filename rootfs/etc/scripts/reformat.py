@@ -31,14 +31,14 @@ def rx_thread(port, rxq):
 def tx_thread(host, txq):
   prctl.set_name(f"tx {host[0]}:{host[1]}")
   enc = locale.getpreferredencoding(False)
-#  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.connect(host)
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+#  sock.connect(host)
   print(f"Connected to JSON output at {host[0]}:{host[1]}")
   while True:
     msg = txq.get()
-    sock.sendall(msg.encode(enc))
-#    sock.sendto(msg.encode(enc), host)
+#    sock.sendall(msg.encode(enc))
+    sock.sendto(msg.encode(enc), host)
 
 # wrapper to catch exceptions and restart threads
 def thread_wrapper(func, *args):
@@ -182,22 +182,21 @@ gesLoc = {
     "RIOCDYA": " ",
 }
 
-json_in = getenv("UDP_IN", "5556")
+json_in = getenv("UDP_IN", "5557")
 json_in = json_in.split(";")
 json_in = [int(x) for x in json_in]
 
-sbs_out = getenv("JSON_OUT", "acars_router:5550")
-#sbs_out = getenv("JSON_OUT", "10.0.0.109:5559")
-sbs_out = sbs_out.split(";")
-sbs_out = [x.split(":") for x in sbs_out]
-sbs_out = [(x,int(y)) for x,y in sbs_out]
+json_out = getenv("JSON_OUT", "acarshub:5557")
+json_out = json_out.split(";")
+json_out = [x.split(":") for x in json_out]
+json_out = [(x,int(y)) for x,y in json_out]
 
 rxq = SimpleQueue()
 for p in json_in:
   Thread(name=f"rx {p}", target=thread_wrapper, args=(rx_thread, p, rxq)).start()
 
 txqs = []
-for i,s in enumerate(sbs_out):
+for i,s in enumerate(json_out):
   txqs.append(SimpleQueue())
   Thread(name=f"tx {s[0]}:{s[1]}", target=thread_wrapper, args=(tx_thread, s, txqs[-1])).start()
 
@@ -212,6 +211,9 @@ while True:
 #    print(f"{raw}\n")
 
     data = loads(raw)
+    if getenv("LOG_IN_JSON"):
+      pprint(data)
+      print()
     if not data or "ACARS" != data.get("msg_name"):
       continue
 
@@ -234,23 +236,28 @@ while True:
         gsa = ges1.groupdict().get("gs")
     from_decoded = f"{gsa}/{gesLoc.get(gsa, '')}"
 
+    station = data.get("source").get("station_id", "")
+    try:
+      statind = station.rindex("-")
+    except:
+      statind = len(station)
+
     out = {
-      "freq": 1545.0 if "6" in data.get("source").get("station_id", "") else 1545.075 if "12" in data.get("source").get("station_id", "") else 1546,
-      "channel": 0,
-      "error": 0,
-      "level": 0.0,
+      "freq": 1545.0 if "6" in station else 1545.075 if "12" in station else 1546,
+#      "error": 0,
+#      "level": 0.0,
       "timestamp": data.get("timestamp"),
       "app": {
         "name": data.get("source", {}).get("app", {}).get("name", ""),
         "ver": data.get("source", {}).get("app", {}).get("version", "")
       },
-      "station_id": data.get("source").get("station_id", ""),
+      "station_id": station[:statind],
       "icao": data.get("signal_unit", {}).get("aes_id", ""),
       "toaddr": data.get("signal_unit", {}).get("aes_id", ""),
       "mode": str(data.get("mode", "")),
       "label": data.get("label", ""),
       "block_id": str(data.get("bi", "")),
-      "ack": "",
+#      "ack": "",
       "tail": data.get("plane_reg[1:]", ""),
       "text": data.get("message", ""),
       "msgno": str(data.get("signal_unit", {}).get("ref_no", "")),
@@ -261,7 +268,7 @@ while True:
     }
 
     if data.get("libacars", {}).get("arinc622", {}).get("cpdlc"):
-        out["decodedText"] = {
+        out["decodedText"] = dumps({
                                "decoder": {
                                             "decodedStatus": "partial"
                                           },
@@ -269,9 +276,9 @@ while True:
                                               "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
                                               "value": dumps(data.get("libacars", {}).get("arinc622", {}).get("cpdlc", ""))
                                             }
-                             }
+                             })
     elif data.get("libacars", {}).get("arinc622", {}).get("adsc"):
-        out["decodedText"] = {
+        out["decodedText"] = dumps({
                                "decoder": {
                                             "decodedStatus": "partial"
                                           },
@@ -279,9 +286,9 @@ while True:
                                               "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
                                               "value": dumps(data.get("libacars", {}).get("arinc622", {}).get("adsc", ""))
                                             }
-                             }
+                             })
     elif data.get("libacars", {}).get("arinc622"):
-        out["decodedText"] = {
+        out["decodedText"] = dumps({
                                "decoder": {
                                             "decodedStatus": "partial"
                                           },
@@ -289,13 +296,21 @@ while True:
                                               "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
                                               "value": dumps(data.get("libacars", {}).get("arinc622", ""))
                                             }
-                             }
+                             })
 
-    #pprint(out)
-    #print()
+    if out.get("decodedText"):
+#      out["libacars"] = f"<p>Decoded:</p><p><pre>{data['libacars']}</pre></p>"
+      out["libacars"] = data["libacars"]
+
+    if getenv("LOG_IN_JSON_FILT"):
+      pprint(data)
+      print()
+    if getenv("LOG_OUT_JSON"):
+      pprint(out)
+      print()
 
     for q in txqs:
-      q.put(dumps(out)+"\r\n")
+      q.put(dumps({"imsl":out})+"\r\n")
   except KeyboardInterrupt:
     exit()
   except BaseException:

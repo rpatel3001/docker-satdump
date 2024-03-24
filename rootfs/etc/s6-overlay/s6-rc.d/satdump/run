@@ -4,4 +4,9 @@
 # shellcheck disable=SC1091
 #sleep 86400
 echo "running command: $RUN_CMD"
-exec bash -c "$RUN_CMD"
+
+if [ -n "${LOG_RAW}" ]; then
+    exec bash -c "$RUN_CMD"
+else
+    exec bash -c "$RUN_CMD > /dev/null"
+fi

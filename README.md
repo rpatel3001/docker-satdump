@@ -20,8 +20,13 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `RUN_CMD`   | The command to run when the container starts. The container will restart when it returns. | Unset |
-| `JSON_OUT`   | The `host:port` to forward reformatted JSON messages to. | `acars_router:5550` |
+| `RUN_CMD`  | The command to run when the container starts. The container will restart when it returns. | Unset |
+| `UDP_IN`   | The UDP port for the JSON reformatter to listen for raw satdump JSON on. This is set in udp_sinks sections of the Inmarsat.json file. | `5557` |
+| `JSON_OUT` | The UDP `host:port` to forward reformatted JSON messages to. | `acarshub:5557` |
+| `LOG_RAW`  | Set to any value to log the output of the satdump command to stdout. | Unset |
+| `LOG_IN_JSON`      | Set to any value to log the JSON output of satdump to stdout. | Unset |
+| `LOG_IN_JSON_FILT` | Set to any value to log the JSON output of satdump to stdout, after filtering out non-ACARS messages. | Unset |
+| `LOG_OUT_JSON`     | Set to any value to log the reformatted JSON output to stdout. | Unset |
 
 ## Docker Compose
 
@@ -45,7 +50,7 @@ services:
 #      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
 
   acarshubsat:
-    image: ghcr.io/sdr-enthusiasts/docker-acarshub:latest
+    build: https://github.com/rpatel3001/docker-acarshub.git#inmarsat-L
     container_name: acarshubsat
     restart: always
     ports:
@@ -56,27 +61,13 @@ services:
       - /var/log:size=64M
     environment:
       - TZ=America/New_York
-      - ENABLE_ACARS=external
-      - MIN_LOG_LEVEL=3
-
-  acars_router:
-    image: ghcr.io/sdr-enthusiasts/acars_router:latest
-    container_name: acars_router
-    restart: always
-    environment:
-      - TZ=America/New_York
-      - AR_SEND_UDP_ACARS=acarshubsat:5550
-    tmpfs:
-      - /run:exec,size=64M
-      - /var/log
-
-
+      - ENABLE_IMSL=external
 
 ```
 
 The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
 
-`vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.11 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature changes.
+`vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.8 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. I have since bought a Nooelec SMArt XTR which does not require any offset.
 
 ```
 {
@@ -175,7 +166,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
 }
 ```
 
-`Inmarsat.json` overrides the default settings for each decoder pipeline, including station_id, udp_sink, and save_file. The below file does not save files, sends every decoder pipeline's output to 10.0.0.14:5556, and sets a `station_id` based on the pipeline.
+`Inmarsat.json` overrides the default settings for each decoder pipeline, including station_id, udp_sink, and save_file. The below file does not save files, sends every decoder pipeline's output to 10.0.0.14:5557, and sets a `station_id` based on the pipeline.
 
 ```
 {
@@ -218,7 +209,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
-                            "port": 5556
+                            "port": 5557
                         }
                     }
                 }
@@ -266,7 +257,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
-                            "port": 5556
+                            "port": 5557
                         }
                     }
                 }
@@ -313,7 +304,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
-                            "port": 5556
+                            "port": 5557
                         }
                     }
                 }
@@ -363,7 +354,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
-                            "port": 5556
+                            "port": 5557
                         }
                     }
                 }
@@ -417,7 +408,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
-                            "port": 5556
+                            "port": 5557
                         }
                     }
                 }
