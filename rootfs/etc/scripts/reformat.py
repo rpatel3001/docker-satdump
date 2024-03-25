@@ -60,128 +60,6 @@ def thread_wrapper(func, *args):
           print(f"[{current_thread().name}] thread function returned; restarting thread in {slp} seconds")
         sleep(slp)
 
-gesLoc = {
-    "ANCXFXA": "Anchorage Domestic (USA)",
-    "ANCATYA": "Anchorage Oceanic (USA)",
-    "AKLCDYA": "Auckland Oceanic (NZ)",
-    "BKKGWXA": "Bangkok (Thailand)",
-    "BNECAYA": "Brisbane (AUS)",
-    "CTUGWYA": "Chengdu (China)",
-    "MAACAYA": "Chennai (India)",
-    "FUKJJYA": "Fukuoka (Japan)",
-    "YQXE2YA": "Gander Oceanic (Canada)",
-    "YQXD2YA": "Gander Domestic (Canada)",
-    "YQME2YA": "Moncton (Canada)",
-    "YULE2YA": "Montreal (Canada)",
-    "YYZE2YA": "Toronto (Canada)",
-    "YWGE2YA": "Winnipeg (Canada)",
-    "YVRE2YA": "Vancouver (Canada)",
-    "USADCXA": "USA Domestic (USA)",
-    "JNBCAYA": "Johannesburg Oceanic (SA)",
-    "KMGGWYA": "Kunming (China)",
-    "LHWGWYA": "Lanzhou (China)",
-    "MELCAYA": "Melbourne (AUS)",
-    "BOMCAYA": "Mumbai (India)",
-    "NANCDYA": "Nadi (Fiji)",
-    "NYCODYA": "New York Oceanic (USA)",
-    "OAKODYA": "Oakland Oceanic (USA)",
-    "REKCAYA": "Reykjavik (Iceland)",
-    "SMACAYA": "Santa Maria (Portugal)",
-    "PIKCPYA": "Shanwick (UK)",
-    "SINCDYA": "Singapore",
-    "PPTCDYA": "Tahiti (French Polynesia)",
-    "UPGCAYA": "Makassar (Indonesia)",
-    "NIMCAYA": "Niamey (Niger)",
-    "DKRCAYA": "Dakar Oceanic (Senegal)",
-    "NKCCAYA": "Dakar Domestic (Senegal)",
-    "GVSCAYA": "Sal Oceanic (Cape Verde)",
-    "BZVCAYA": "Brazzaville (Congo)",
-    "CAICAYA": "Egypt",
-    "PAREUYA": "France",
-    "MEXCAYA": "Mexico",
-    "BKKCAYA": "Thailand",
-    "NDJCAYA": "Ndjamena (Chad)",
-    "LPAFAYA": "Canarias (Spain)",
-    "ALGCAYA": "Alger (Algeria)",
-    "SEZCAYA": "Seychelles",
-    "LADCAYA": "Angola (Luanda)",
-    "ABJCAYA": "Ivory Coast (Abidjan)",
-    "TNRCAYA": "Antananarivo (Madagascar)",
-    "KRTCAYA": "Khartoum (Sudan)",
-    "CCUCAYA": "Kolkata (India)",
-    "SNNCPXA": "Shannon (Ireland)",
-    "PIKCAYA": "Scottish (UK)",
-    "SOUCAYA": "London (UK)",
-    "MSTEC7X": "Maastricht (NL)",
-    "POSCLYA": "Piarco (Trinidad)",
-    "TGUACYA": "Cenamar (Honduras)",
-    "CAYCAYA": "Cayenne (French Guiana)",
-    "RECOEYA": "Atlantico (Brazil)",
-    "SCLCAYA": "Antofagasta (Chile)",
-    "GDXE1XA": "Magadan (Russia)",
-    "URCE1YA": "Urumqi (China)",
-    "RPHIAYA": "Manila (Philippines)",
-    "SGNGWXA": "Ho Chi Minh (Vietnam)",
-    "RGNCAYA": "Yangon (Myanmar)",
-    "SINCXYA": "Singapore",
-    "KULCAYA": "Kuala Lumpur (Malaysia)",
-    "POMCAYA": "Port Moresby (PG)",
-    "DELCAYA": "Delhi (India)",
-    "CMBCBYA": "Colombo (Sri Lanka)",
-    "MRUCAYA": "Mauritius (Mauritius)",
-    "TGUACAY": "Honduras (CENAMER)",
-    "MLECAYA": "Male (Maldives)",
-    "BDOCAYA": "Bodo Oceanic (Norway)",
-    "NBOCAYA": "Kenya (Niarobi)",
-    "ACCFAYA": "Gahna (Accra)",
-    "BJSGWYA": "Beijing (China)",
-    "CAICDYA": "Cairo (Egypt)",
-    "CANGWYA": "Guangzhou (China)",
-    "CCUCBYA": "Kolkata (India)",
-    "CMBCAYA": "Colombo (Sri Lanka)",
-    "DDLCVXA": "Bodo (Norway)",
-    "GDXGWXA": "Magadan (Russia)",
-    "HKGCCYA": "Hong Kong",
-    "HRBGWYA": "Harbin (China)",
-    "JAKGWXA": "Jakarta (Indonesia)",
-    "KANCAYA": "Kano (Nigeria)",
-    "KRTCDYA": "Sudan",
-    "LISACYA": "Lisboa (Portugal)",
-    "LXAGWYA": "Lhasa (China)",
-    "MNLCBYA": "Manila (Philippines)",
-    "SELCAXH": "Seoul (Korea)",
-    "SHAGWYA": "Shanghai (China)",
-    "TASCAXH": "Tashkent (Uzbekistan)",
-    "ULNGWXA": "Ulan Bataar (Mongolia)",
-    "URCGWYA": "Urum-Qi (China)",
-    "YEGCDYA": "Edmonton (Canada)",
-    "YEGE2YA": "Edmonton (Canada)",
-    "SPLATYA": "Amsterdam Schipol (NL)",
-    "CDGATYA": "Paris (France)",
-    "MGQCAYA": "Ethiopia",
-    "FIHCAYA": "Congo",
-    "PIKCLYA": "Prestwick Oceanic (UK)",
-    "PIKCLXS": "Prestwick Domestic (UK)",
-    "DOHATYA": "Doha (Qatar)",
-    "MCTASWY": "Muscat (Oman)",
-    "JEDAAYA": " ",
-    "DXBEGEK": " ",
-    "RUHAAYA": " ",
-    "BOMCDYA": " ",
-    "BJSATYA": " ",
-    "MADAAYA": " ",
-    "JEDATYA": " ",
-    "GVACBYA": " ",
-    "DATSAXS": " ",
-    "AUHCAYA": " ",
-    "BAHCEYA": " ",
-    "MADCDYA": " ",
-    "AUHABYA": " ",
-    "GYDCDYA": " ",
-    "HDQOILX": " ",
-    "RIOCDYA": " ",
-}
-
 json_in = getenv("UDP_IN", "5557")
 json_in = json_in.split(";")
 json_in = [int(x) for x in json_in]
@@ -211,106 +89,27 @@ while True:
 #    print(f"{raw}\n")
 
     data = loads(raw)
-    if getenv("LOG_IN_JSON"):
-      pprint(data)
-      print()
-    if not data or "ACARS" != data.get("msg_name"):
-      continue
+#    if not data or "ACARS" != data.get("msg_name"):
+#      continue
 
-    flight = ""
-    fl1 = fn1.search(data.get("message", ""))
-    if fl1:
-      flight = fl1.groupdict().get("fn")
-    if not flight:
-      fl2 = fn2.search(data.get("message", ""))
-      if fl2:
-        flight = fl2.groupdict().get("fn")
+    out = data
 
-    if not flight or len(flight) > 9:
-      flight = ""
-
-    gsa = data.get("libacars", {}).get("arinc622", {}).get("gs_addr", "")
-    if not gsa:
-      ges1 = gs1.search(data.get("message", ""))
-      if ges1:
-        gsa = ges1.groupdict().get("gs")
-    from_decoded = f"{gsa}/{gesLoc.get(gsa, '')}"
-
-    station = data.get("source").get("station_id", "")
     try:
-      statind = station.rindex("-")
+      station = data["source"]["station_id"]
+      out["source"]["station_id"] = station[:station.rindex("-")]
+      out["freq"] = 1545.0 if "6" in station else 1545.075 if "12" in station else 1546.0
     except:
-      statind = len(station)
+      pass
 
-    out = {
-      "freq": 1545.0 if "6" in station else 1545.075 if "12" in station else 1546,
-#      "error": 0,
-#      "level": 0.0,
-      "timestamp": data.get("timestamp"),
-      "app": {
-        "name": data.get("source", {}).get("app", {}).get("name", ""),
-        "ver": data.get("source", {}).get("app", {}).get("version", "")
-      },
-      "station_id": station[:statind],
-      "icao": data.get("signal_unit", {}).get("aes_id", ""),
-      "toaddr": data.get("signal_unit", {}).get("aes_id", ""),
-      "mode": str(data.get("mode", "")),
-      "label": data.get("label", ""),
-      "block_id": str(data.get("bi", "")),
-#      "ack": "",
-      "tail": data.get("plane_reg[1:]", ""),
-      "text": data.get("message", ""),
-      "msgno": str(data.get("signal_unit", {}).get("ref_no", "")),
-      "flight": flight,
-      "fromaddr": data.get("signal_unit", {}).get("ges_id"),
-      "fromaddr_decoded": from_decoded,
-      "end": True
-    }
-
-    if data.get("libacars", {}).get("arinc622", {}).get("cpdlc"):
-        out["decodedText"] = dumps({
-                               "decoder": {
-                                            "decodedStatus": "partial"
-                                          },
-                               "formatted": {
-                                              "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
-                                              "value": dumps(data.get("libacars", {}).get("arinc622", {}).get("cpdlc", ""))
-                                            }
-                             })
-    elif data.get("libacars", {}).get("arinc622", {}).get("adsc"):
-        out["decodedText"] = dumps({
-                               "decoder": {
-                                            "decodedStatus": "partial"
-                                          },
-                               "formatted": {
-                                              "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
-                                              "value": dumps(data.get("libacars", {}).get("arinc622", {}).get("adsc", ""))
-                                            }
-                             })
-    elif data.get("libacars", {}).get("arinc622"):
-        out["decodedText"] = dumps({
-                               "decoder": {
-                                            "decodedStatus": "partial"
-                                          },
-                               "formatted": {
-                                              "label": data.get("libacars", {}).get("arinc622", {}).get("msg_type", ""),
-                                              "value": dumps(data.get("libacars", {}).get("arinc622", ""))
-                                            }
-                             })
-
-    if out.get("decodedText"):
-#      out["libacars"] = f"<p>Decoded:</p><p><pre>{data['libacars']}</pre></p>"
-      out["libacars"] = data["libacars"]
-
-    if getenv("LOG_IN_JSON_FILT"):
+    if (getenv("LOG_IN_JSON")) or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name")):
       pprint(data)
       print()
-    if getenv("LOG_OUT_JSON"):
+    if (getenv("LOG_OUT_JSON")) or (getenv("LOG_OUT_JSON_FILT") and "ACARS" == out.get("msg_name")):
       pprint(out)
       print()
 
     for q in txqs:
-      q.put(dumps({"imsl":out})+"\r\n")
+      q.put(f"{dumps(out)}\r\n")
   except KeyboardInterrupt:
     exit()
   except BaseException:

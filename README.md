@@ -20,13 +20,14 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `RUN_CMD`  | The command to run when the container starts. The container will restart when it returns. | Unset |
+| `RUN_CMD`  | The command to run when the container starts. The container will restart when it returns.                                             | Unset |
 | `UDP_IN`   | The UDP port for the JSON reformatter to listen for raw satdump JSON on. This is set in udp_sinks sections of the Inmarsat.json file. | `5557` |
-| `JSON_OUT` | The UDP `host:port` to forward reformatted JSON messages to. | `acarshub:5557` |
-| `LOG_RAW`  | Set to any value to log the output of the satdump command to stdout. | Unset |
-| `LOG_IN_JSON`      | Set to any value to log the JSON output of satdump to stdout. | Unset |
-| `LOG_IN_JSON_FILT` | Set to any value to log the JSON output of satdump to stdout, after filtering out non-ACARS messages. | Unset |
-| `LOG_OUT_JSON`     | Set to any value to log the reformatted JSON output to stdout. | Unset |
+| `JSON_OUT` | The UDP `host:port` to forward reformatted JSON messages to.                                                                          | `acarshub:5557` |
+| `LOG_RAW`  | Set to any value to log the output of the satdump command to stdout.                                                                  | Unset |
+| `LOG_IN_JSON`       | Set to any value to log the JSON output of satdump to stdout.                                                                | Unset |
+| `LOG_IN_JSON_FILT`  | Set to any value to log the JSON output of satdump to stdout, after filtering out non-ACARS messages.                        | Unset |
+| `LOG_OUT_JSON`      | Set to any value to log the reformatted JSON output to stdout.                                                               | Unset |
+| `LOG_OUT_JSON_FILT` | Set to any value to log the reformatted JSON output to stdout, after filtering out non-ACARS messages.                       | Unset |
 
 ## Docker Compose
 
