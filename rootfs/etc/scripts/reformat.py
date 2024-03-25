@@ -12,6 +12,8 @@ from queue import SimpleQueue
 from threading import Thread, current_thread
 from time import sleep
 
+from util import geslookup
+
 #from colorama import Fore
 
 def rx_thread(port, rxq):
@@ -81,7 +83,7 @@ for i,s in enumerate(json_out):
 fn1 = compile(r"\/FN(?P<fn>\w+)\/")
 fn2 = compile(r"\/FMH(?P<fn>\w+),")
 
-gs1 = compile(r"^\/(?P<gs>\w{7})\.")
+gs1 = compile(r"[\s\/](?P<gs>\w{7})\.")
 
 while True:
   try:
@@ -94,12 +96,35 @@ while True:
 
     out = data
 
+    # convert station ID tag to frequency, remove tag
     try:
       station = data["source"]["station_id"]
       out["source"]["station_id"] = station[:station.rindex("-")]
       out["freq"] = 1545.0 if "6" in station else 1545.075 if "12" in station else 1546.0
     except:
       pass
+
+    # try to extract flight number
+    flight = ""
+    fl1 = fn1.search(data.get("message", ""))
+    if fl1:
+      flight = fl1.groupdict().get("fn")
+    if not flight:
+      fl2 = fn2.search(data.get("message", ""))
+      if fl2:
+        flight = fl2.groupdict().get("fn")
+
+    if flight and len(flight) <= 9:
+      out["flight"] = flight
+
+    # try to decode ground station
+    gsa = data.get("libacars", {}).get("arinc622", {}).get("gs_addr", "")
+    if not gsa:
+      ges1 = gs1.search(data.get("message", ""))
+      if ges1:
+        gsa = ges1.groupdict().get("gs")
+    if decoded := geslookup(gsa):
+      out["fromaddr_decoded"] = f"{gsa}/{geslookup(gsa)}"
 
     if (getenv("LOG_IN_JSON")) or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name")):
       pprint(data)
