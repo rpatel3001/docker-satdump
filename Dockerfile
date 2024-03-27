@@ -36,4 +36,11 @@ RUN set -x && \
     apt-get autoremove -y && \
     rm -rf /src/* /tmp/* /var/lib/apt/lists/*
 
+RUN set -x && \
+    mkdir -p /opt && \
+    pushd /opt && \
+    curl --location --output /opt/citycodes.csv https://raw.githubusercontent.com/rpatel3001/Airports/main/citycodes.csv && \
+    curl --location --output /opt/airports.csv https://raw.githubusercontent.com/rpatel3001/Airports/main/airports.csv && \
+    popd
+
 COPY rootfs /

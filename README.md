@@ -28,6 +28,7 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 | `LOG_IN_JSON_FILT`  | Set to any value to log the JSON output of satdump to stdout, after filtering out non-ACARS messages.                        | Unset |
 | `LOG_OUT_JSON`      | Set to any value to log the reformatted JSON output to stdout.                                                               | Unset |
 | `LOG_OUT_JSON_FILT` | Set to any value to log the reformatted JSON output to stdout, after filtering out non-ACARS messages.                       | Unset |
+| `OUTPUT_ACARS_ONLY` | Set to any value to prevent outputting JSON for non-ACARS messages to ease the load on your Acarshub instance a little.      | Unset |
 
 ## Docker Compose
 
@@ -68,7 +69,7 @@ services:
 
 The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
 
-`vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.8 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. I have since bought a Nooelec SMArt XTR which does not require any offset.
+`vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.8 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. If all channels require the same offset, you can apply the offset in the satdump --frequency argument instead of adjusting the VFO frequencies. I have since bought a Nooelec SMArt XTR which does not require any offset.
 
 ```
 {
@@ -167,7 +168,7 @@ The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at
 }
 ```
 
-`Inmarsat.json` overrides the default settings for each decoder pipeline, including station_id, udp_sink, and save_file. The below file does not save files, sends every decoder pipeline's output to 10.0.0.14:5557, and sets a `station_id` based on the pipeline.
+`Inmarsat.json` overrides the default settings for each decoder pipeline, including station_id, udp_sink, and save_file. The below file does not save files, sends every decoder pipeline's output to the reformatter script at localhost:5557, and sets a `station_id` based on the pipeline.
 
 ```
 {

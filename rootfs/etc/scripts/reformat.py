@@ -11,6 +11,7 @@ import prctl
 from queue import SimpleQueue
 from threading import Thread, current_thread
 from time import sleep
+from csv import DictReader
 
 from util import geslookup
 
@@ -62,6 +63,24 @@ def thread_wrapper(func, *args):
           print(f"[{current_thread().name}] thread function returned; restarting thread in {slp} seconds")
         sleep(slp)
 
+with open('/opt/airports.csv', encoding='utf-8') as csvfile:
+  airports_raw = DictReader(csvfile)
+  airports = {}
+  for row in airports_raw:
+    loc = row["city"]
+    if not loc:
+      loc = row["state"]
+    if loc:
+      loc += ", "
+    loc += row["country_id"]
+    airports[row["code"]] = loc
+
+with open('/opt/citycodes.csv', encoding='utf-8') as csvfile:
+  citycodes_raw = DictReader(csvfile)
+  citycodes = {}
+  for row in citycodes_raw:
+    citycodes[row["code"]] = " ".join(row["name"].split()[:-2]) + f", {row['country_id']}"
+
 json_in = getenv("UDP_IN", "5557")
 json_in = json_in.split(";")
 json_in = [int(x) for x in json_in]
@@ -83,7 +102,7 @@ for i,s in enumerate(json_out):
 fn1 = compile(r"\/FN(?P<fn>\w+)\/")
 fn2 = compile(r"\/FMH(?P<fn>\w+),")
 
-gs1 = compile(r"[\s\/](?P<gs>\w{7})\.")
+gs1 = compile(r"^(\/|- #\w{2}\/\w{2} )(?P<gs>\w{7})\.")
 
 while True:
   try:
@@ -91,8 +110,11 @@ while True:
 #    print(f"{raw}\n")
 
     data = loads(raw)
-#    if not data or "ACARS" != data.get("msg_name"):
-#      continue
+    if data and (getenv("LOG_IN_JSON") or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name"))):
+      pprint(data)
+      print()
+    if not data or "ACARS" != data.get("msg_name"):
+      continue
 
     out = data
 
@@ -117,24 +139,33 @@ while True:
     if flight and len(flight) <= 9:
       out["flight"] = flight
 
-    # try to decode ground station
+    # try to parse ground station
     gsa = data.get("libacars", {}).get("arinc622", {}).get("gs_addr", "")
     if not gsa:
       ges1 = gs1.search(data.get("message", ""))
       if ges1:
         gsa = ges1.groupdict().get("gs")
-    if decoded := geslookup(gsa):
-      out["fromaddr_decoded"] = f"{gsa}/{geslookup(gsa)}"
 
-    if (getenv("LOG_IN_JSON")) or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name")):
-      pprint(data)
-      print()
-    if (getenv("LOG_OUT_JSON")) or (getenv("LOG_OUT_JSON_FILT") and "ACARS" == out.get("msg_name")):
-      pprint(out)
-      print()
+    # try to decode ground station
+    if gsa:
+      fromaddr = gsa
+      decoded = geslookup(gsa)
+      if not decoded:
+        decoded = citycodes.get(gsa[:3])
+      if not decoded:
+        decoded = airports.get(gsa[:3])
+      if decoded:
+        fromaddr += f"/{decoded}"
+      else:
+        print(f"ground station {gsa} not found")
+      out["fromaddr_decoded"] = fromaddr
 
-    for q in txqs:
-      q.put(f"{dumps(out)}\r\n")
+    if not getenv("OUTPUT_ACARS_ONLY") or data["msg_name"] == "ACARS":
+      if (getenv("LOG_OUT_JSON")) or (getenv("LOG_OUT_JSON_FILT") and "ACARS" == out.get("msg_name")):
+        pprint(out)
+        print()
+      for q in txqs:
+        q.put(f"{dumps(out)}\r\n")
   except KeyboardInterrupt:
     exit()
   except BaseException:
