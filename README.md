@@ -51,9 +51,9 @@ services:
       - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
 #      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
 
-  acarshubsat:
+  acarshub:
     build: https://github.com/rpatel3001/docker-acarshub.git#inmarsat-L
-    container_name: acarshubsat
+    container_name: acarshub
     restart: always
     ports:
       - 8000:80
@@ -68,6 +68,8 @@ services:
 ```
 
 The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
+
+The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created before running the contianer for the first time.
 
 `vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.8 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. If all channels require the same offset, you can apply the offset in the satdump --frequency argument instead of adjusting the VFO frequencies. I have since bought a Nooelec SMArt XTR which does not require any offset.
 
