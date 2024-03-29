@@ -120,11 +120,11 @@ while True:
 
     # convert station ID tag to frequency, remove tag
     try:
-      station = data["source"]["station_id"]
-      out["source"]["station_id"] = station[:station.rindex("-")]
-      out["freq"] = 1545.0 if "6" in station else 1545.075 if "12" in station else 1546.0
+      out["freq"] = int(data["source"]["station_id"])/1e6
     except:
       pass
+
+    out["source"]["station_id"] = getenv("STATION_ID")
 
     # try to extract flight number
     flight = ""

@@ -50,6 +50,7 @@ services:
     environment:
       - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
 #      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
+      - STATION_ID=XX-YYY-IMSL-98W
 
   acarshub:
     build: https://github.com/rpatel3001/docker-acarshub.git#inmarsat-L
@@ -67,105 +68,176 @@ services:
 
 ```
 
-The above setup is intended to decode Inmarsat 4F3 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
+The above setup is intended to decode Inmarsat 4F3 at 98W from an rtl_tcp stream at 10.0.0.114:7373. To directly use an RTL-SDR instead, uncomment the `cgroup` and `/dev` lines and switch which `RUN_CMD` line is commented. You may need to change the `--source_id` if you have more than one RTL-SDR.
 
 The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created before running the contianer for the first time.
 
-`vfo.json` contains the frequencies and decoder pipelines being used. You'll note that they are not exact due to an approximately 3.8 kHz frequency error in my RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. If all channels require the same offset, you can apply the offset in the satdump --frequency argument instead of adjusting the VFO frequencies. I have since bought a Nooelec SMArt XTR which does not require any offset.
+`vfo.json` contains the frequencies and decoder pipelines being used. You may need to set the frequency to be offset from nominal due to frequency inaccuracies in your RTL-SDR. You will likely need to look at a waterfall and adjust these values based on your specific device. They may even need tuning as ambient temperature or the tuned center frequency changes. If all channels require the same offset, you can apply the offset to the satdump --frequency argument instead of adjusting the VFO frequencies. I started testing with an RTL-SDR Blog V3 that required approximately a 3.8 kHz offset. I have since bought a Nooelec SMArt XTR which does not require any offset.
+
+The VFO name and station_id are set to the frequency value. This is to allow the python script to associate each message with a signal level and frequency, because those items are not included in the JSON output.
 
 ```
 {
-        "vfo1": {
-                "frequency": 1545018800,
-                "pipeline": "inmarsat_aero_6"
+        "1545015000": {
+                "frequency": 1545015000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545015000"
+                }
         },
-        "vfo2": {
-                "frequency": 1545023800,
-                "pipeline": "inmarsat_aero_6"
+        "1545020000": {
+                "frequency": 1545020000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545020000"
+                }
         },
-        "vfo3": {
-                "frequency": 1545028800,
-                "pipeline": "inmarsat_aero_6"
+        "1545025000": {
+                "frequency": 1545025000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545025000"
+                }
         },
-        "vfo4": {
-                "frequency": 1545033800,
-                "pipeline": "inmarsat_aero_6"
+        "1545030000": {
+                "frequency": 1545030000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545030000"
+                }
         },
-        "vfo5": {
-                "frequency": 1545038800,
-                "pipeline": "inmarsat_aero_6"
+        "1545035000": {
+                "frequency": 1545035000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545035000"
+                }
         },
-        "vfo6": {
-                "frequency": 1545043800,
-                "pipeline": "inmarsat_aero_6"
+        "1545040000": {
+                "frequency": 1545040000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545040000"
+                }
         },
-        "vfo7": {
-                "frequency": 1545053800,
-                "pipeline": "inmarsat_aero_6"
+        "1545050000": {
+                "frequency": 1545050000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545050000"
+                }
         },
-        "vfo8": {
-                "frequency": 1545063800,
-                "pipeline": "inmarsat_aero_6"
+        "1545060000": {
+                "frequency": 1545060000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545060000"
+                }
         },
-        "vfo9": {
-                "frequency": 1545068800,
-                "pipeline": "inmarsat_aero_6"
+        "1545065000": {
+                "frequency": 1545065000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545065000"
+                }
         },
-        "vfo10": {
-                "frequency": 1545078800,
-                "pipeline": "inmarsat_aero_12"
+        "1545075000": {
+                "frequency": 1545075000,
+                "pipeline": "inmarsat_aero_12",
+                "parameters": {
+                        "station_id": "1545075000"
+                }
         },
-        "vfo11": {
-                "frequency": 1545083800,
-                "pipeline": "inmarsat_aero_6"
+        "1545080000": {
+                "frequency": 1545080000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545080000"
+                }
         },
-        "vfo12": {
-                "frequency": 1545088800,
-                "pipeline": "inmarsat_aero_6"
+        "1545085000": {
+                "frequency": 1545085000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545085000"
+                }
         },
-        "vfo13": {
-                "frequency": 1545093800,
-                "pipeline": "inmarsat_aero_6"
+        "1545090000": {
+                "frequency": 1545090000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545090000"
+                }
         },
-        "vfo14": {
-                "frequency": 1545103800,
-                "pipeline": "inmarsat_aero_6"
+        "1545100000": {
+                "frequency": 1545100000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545100000"
+                }
         },
-        "vfo15": {
-                "frequency": 1545113800,
-                "pipeline": "inmarsat_aero_6"
+        "1545110000": {
+                "frequency": 1545110000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545110000"
+                }
         },
-        "vfo16": {
-                "frequency": 1545173800,
-                "pipeline": "inmarsat_aero_6"
+        "1545170000": {
+                "frequency": 1545170000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545170000"
+                }
         },
-        "vfo18": {
-                "frequency": 1545178800,
-                "pipeline": "inmarsat_aero_6"
+        "1545175000": {
+                "frequency": 1545175000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545175000"
+                }
         },
-        "vfo19": {
-                "frequency": 1545198800,
-                "pipeline": "inmarsat_aero_6"
+        "1545195000": {
+                "frequency": 1545195000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545195000"
+                }
         },
-        "vfo20": {
-                "frequency": 1545208800,
-                "pipeline": "inmarsat_aero_6"
+        "1545205000": {
+                "frequency": 1545205000,
+                "pipeline": "inmarsat_aero_6",
+                "parameters": {
+                        "station_id": "1545205000"
+                }
         },
-        "vfo21": {
-                "frequency": 1546008800,
-                "pipeline": "inmarsat_aero_105"
+        "1546005000": {
+                "frequency": 1546005000,
+                "pipeline": "inmarsat_aero_105",
+                "parameters": {
+                        "station_id": "1546005000"
+                }
         },
-        "vfo22": {
-                "frequency": 1546023800,
-                "pipeline": "inmarsat_aero_105"
+        "1546020000": {
+                "frequency": 1546020000,
+                "pipeline": "inmarsat_aero_105",
+                "parameters": {
+                        "station_id": "1546020000"
+                }
         },
-        "vfo23": {
-                "frequency": 1546066300,
-                "pipeline": "inmarsat_aero_105"
+        "1546062500": {
+                "frequency": 1546062500,
+                "pipeline": "inmarsat_aero_105",
+                "parameters": {
+                        "station_id": "1546062500"
+                }
         },
-        "vfo24": {
-                "frequency": 1546081300,
-                "pipeline": "inmarsat_aero_105"
+        "1546077500": {
+                "frequency": 1546077500,
+                "pipeline": "inmarsat_aero_105",
+                "parameters": {
+                        "station_id": "1546077500"
+                }
         }
 }
 ```
@@ -257,7 +329,6 @@ The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYY-IMSL-98W-AERO6",
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
@@ -304,7 +375,6 @@ The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYY-IMSL-98W-AERO12",
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
@@ -354,7 +424,6 @@ The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created
             "msg": {
                 "inmarsat_aero_parser": {
                     "save_files": false,
-                    "station_id": "XX-YYY-IMSL-98W-AERO105",
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
@@ -408,7 +477,6 @@ The two files `vfo.json` and `Inmarsat.json`, examples below, need to be created
                 "inmarsat_aero_parser": {
                     "is_c": true,
                     "save_files": false,
-                    "station_id": "XX-YYY-IMSL-98W-AERO84",
                     "udp_sinks": {
                         "test": {
                             "address": "127.0.0.1",
