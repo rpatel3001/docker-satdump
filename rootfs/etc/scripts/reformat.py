@@ -111,10 +111,16 @@ lastSnr = 0
 while True:
   try:
     raw = rxq.get()
-#    print(f"{raw}\n")
+
+    data = loads(raw)
+    if data and (getenv("LOG_IN_JSON") or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name"))):
+      pprint(data)
+      print()
+    if not data or (getenv("OUTPUT_ACARS_ONLY") and "ACARS" != data.get("msg_name")):
+      continue
 
     try:
-      if time() - lastSnr > 1:
+      if time() - lastSnr > float(getenv("SNR_UPDATE_SEC", 1)):
         lastSnr = time()
         snrjs = {}
         rawsnrjs = requests.get("http://localhost:5000/api").json()
@@ -138,16 +144,8 @@ while True:
                           "snr": rawsnrjs[k]['sdpsk_demod']['snr']}
             except KeyError:
               pass
-#        pprint(snrjs)
     except requests.exceptions.ConnectionError:
       pass
-
-    data = loads(raw)
-    if data and (getenv("LOG_IN_JSON") or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name"))):
-      pprint(data)
-      print()
-    if not data or "ACARS" != data.get("msg_name"):
-      continue
 
     out = deepcopy(data)
 
@@ -167,8 +165,21 @@ while True:
       print(traceback.format_exc())
 
     try:
-      if sig := snrjs[data["source"]["station_id"]]["signal"]:
-        out["level"] = f"{float(sig):.2f}"
+      if id := data.get("source", {}).get("station_id"):
+        if sigjs := snrjs.get(id):
+          if level := sigjs.get("signal"):
+            out["level"] = f"{float(level):.2f}"
+        else:
+          idint = int(id)
+          bestk = None
+          bestdiff = 1e6
+          for k,v in snrjs.items():
+            kint = int(k)
+            if abs(idint-kint) < bestdiff:
+              bestdiff = abs(idint-kint)
+              bestk = k
+          print(f"best match for {id} is {bestk}")
+          out["level"] = f"{float(snrjs[k]['signal']):.2f}"
     except:
       print("Couldn't set level")
       print(traceback.format_exc())

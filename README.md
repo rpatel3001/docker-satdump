@@ -30,6 +30,7 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 | `LOG_OUT_JSON_FILT` | Set to any value to log the reformatted JSON output to stdout, after filtering out non-ACARS messages.                       | Unset |
 | `OUTPUT_ACARS_ONLY` | Set to any value to prevent outputting JSON for non-ACARS messages to ease the load on your Acarshub instance a little.      | Unset |
 | `STATION_ID`        | The station ID to set on output messages.                                                                                    | Unset |
+| `SNR_UPDATE_SEC`    | How often to poll the HTTP API to update the VFO signal levels to attach to messages.                                        | `1`   |
 
 ## Docker Compose
 
