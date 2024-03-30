@@ -1,0 +1,57 @@
+diff --git a/src-core/modules/demod/module_demod_base.h b/src-core/modules/demod/module_demod_base.h
+index cd88fdfb..3e11c863 100644
+--- a/src-core/modules/demod/module_demod_base.h
++++ b/src-core/modules/demod/module_demod_base.h
+@@ -72,7 +72,7 @@ namespace demod
+         std::atomic<uint64_t> progress;
+ 
+         M2M4SNREstimator snr_estimator;
+-        float snr, peak_snr;
++        float snr, peak_snr, signal, noise;
+ 
+         bool show_freq = false;
+         float display_freq = 0;
+diff --git a/src-core/modules/demod/module_psk_demod.cpp b/src-core/modules/demod/module_psk_demod.cpp
+index d26fb12e..d74c4dbc 100644
+--- a/src-core/modules/demod/module_psk_demod.cpp
++++ b/src-core/modules/demod/module_psk_demod.cpp
+@@ -184,6 +184,8 @@ namespace demod
+             // Estimate SNR
+             snr_estimator.update(rec->output_stream->readBuf, dat_size);
+             snr = snr_estimator.snr();
++            signal = snr_estimator.signal();
++            noise = snr_estimator.noise();
+ 
+             if (snr > peak_snr)
+                 peak_snr = snr;
+@@ -218,6 +220,8 @@ namespace demod
+             module_stats["snr"] = snr;
+             module_stats["peak_snr"] = peak_snr;
+             module_stats["freq"] = display_freq;
++            module_stats["signal"] = signal;
++            module_stats["noise"] = noise;
+ 
+             if (input_data_type == DATA_FILE)
+                 progress = file_source->getPosition();
+diff --git a/src-core/modules/demod/module_sdpsk_demod.cpp b/src-core/modules/demod/module_sdpsk_demod.cpp
+index 52920f03..44df41e8 100644
+--- a/src-core/modules/demod/module_sdpsk_demod.cpp
++++ b/src-core/modules/demod/module_sdpsk_demod.cpp
+@@ -112,6 +112,8 @@ namespace demod
+             // Estimate SNR
+             snr_estimator.update((complex_t *)rec->output_stream->readBuf, dat_size / 2);
+             snr = snr_estimator.snr();
++            signal = snr_estimator.signal();
++            noise = snr_estimator.noise();
+ 
+             if (snr > peak_snr)
+                 peak_snr = snr;
+@@ -132,6 +134,8 @@ namespace demod
+             // Update module stats
+             module_stats["snr"] = snr;
+             module_stats["peak_snr"] = peak_snr;
++            module_stats["signal"] = signal;
++            module_stats["noise"] = noise;
+ 
+             if (time(NULL) % 10 == 0 && lastTime != time(NULL))
+             {

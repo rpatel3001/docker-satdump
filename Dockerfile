@@ -2,6 +2,8 @@ FROM ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+COPY satdump.patch /tmp/satdump.patch
+
 # hadolint ignore=DL3008,SC2086,DL4006,SC2039
 RUN set -x && \
     TEMP_PACKAGES=() && \
@@ -21,6 +23,7 @@ RUN set -x && \
     "${TEMP_PACKAGES[@]}" && \
     git clone https://github.com/altillimity/satdump.git /src/satdump && \
     pushd /src/satdump && \
+    git apply /tmp/satdump.patch && \
     sed -i '/zenity/d' packages.runner && \
     xargs -a /src/satdump/packages.builder apt install --no-install-recommends -qy && \
     xargs -a /src/satdump/packages.runner apt install -qy && \

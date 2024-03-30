@@ -1,3 +1,4 @@
+from copy import deepcopy
 from re import compile
 import locale
 import socket
@@ -10,8 +11,9 @@ from pprint import pprint
 import prctl
 from queue import SimpleQueue
 from threading import Thread, current_thread
-from time import sleep
+from time import sleep, time
 from csv import DictReader
+import requests
 
 from util import geslookup
 
@@ -104,10 +106,41 @@ fn2 = compile(r"\/FMH(?P<fn>\w+),")
 
 gs1 = compile(r"^(\/|- #\w{2}\/\w{2} )(?P<gs>\w{7})\.")
 
+lastSnr = 0
+
 while True:
   try:
     raw = rxq.get()
 #    print(f"{raw}\n")
+
+    try:
+      if time() - lastSnr > 1:
+        lastSnr = time()
+        snrjs = {}
+        rawsnrjs = requests.get("http://localhost:5000/api").json()
+        for k, v in rawsnrjs.items():
+          try:
+            snrjs[k] = {"ber": rawsnrjs[k]['inmarsat_aero_decoder']['viterbi_ber'],
+                        "lock": rawsnrjs[k]['inmarsat_aero_decoder']['correlator_lock'],
+                        "freq": rawsnrjs[k]['psk_demod']['freq'],
+                        "signal": rawsnrjs[k]['psk_demod']['signal'],
+                        "noise": rawsnrjs[k]['psk_demod']['noise'],
+                        "peak_snr": rawsnrjs[k]['psk_demod']['peak_snr'],
+                        "snr": rawsnrjs[k]['psk_demod']['snr']}
+          except KeyError:
+            try:
+              snrjs[k] = {"ber": rawsnrjs[k]['inmarsat_aero_decoder']['viterbi_ber'],
+                          "lock": rawsnrjs[k]['inmarsat_aero_decoder']['correlator_lock'],
+#                          "freq": rawsnrjs[k]['sdpsk_demod']['freq'],
+                          "signal": rawsnrjs[k]['sdpsk_demod']['signal'],
+                          "noise": rawsnrjs[k]['sdpsk_demod']['noise'],
+                          "peak_snr": rawsnrjs[k]['sdpsk_demod']['peak_snr'],
+                          "snr": rawsnrjs[k]['sdpsk_demod']['snr']}
+            except KeyError:
+              pass
+#        pprint(snrjs)
+    except requests.exceptions.ConnectionError:
+      pass
 
     data = loads(raw)
     if data and (getenv("LOG_IN_JSON") or (getenv("LOG_IN_JSON_FILT") and "ACARS" == data.get("msg_name"))):
@@ -116,15 +149,29 @@ while True:
     if not data or "ACARS" != data.get("msg_name"):
       continue
 
-    out = data
+    out = deepcopy(data)
 
     # convert station ID tag to frequency, remove tag
     try:
-      out["freq"] = int(data["source"]["station_id"])/1e6
+      if freq := data["source"]["station_id"]:
+        out["freq"] = f"{int(freq)/1e6:.3f}"
     except:
-      pass
+      print("Couldn't set freq")
+      print(traceback.format_exc())
 
-    out["source"]["station_id"] = getenv("STATION_ID")
+    try:
+      if id := getenv("STATION_ID"):
+        out["source"]["station_id"] = id
+    except:
+      print("Couldn't set station id")
+      print(traceback.format_exc())
+
+    try:
+      if sig := snrjs[data["source"]["station_id"]]["signal"]:
+        out["level"] = f"{float(sig):.2f}"
+    except:
+      print("Couldn't set level")
+      print(traceback.format_exc())
 
     # try to extract flight number
     flight = ""
@@ -160,7 +207,7 @@ while True:
         print(f"ground station {gsa} not found")
       out["fromaddr_decoded"] = fromaddr
 
-    if not getenv("OUTPUT_ACARS_ONLY") or data["msg_name"] == "ACARS":
+    if not getenv("OUTPUT_ACARS_ONLY") or "ACARS" == out.get("msg_name"):
       if (getenv("LOG_OUT_JSON")) or (getenv("LOG_OUT_JSON_FILT") and "ACARS" == out.get("msg_name")):
         pprint(out)
         print()

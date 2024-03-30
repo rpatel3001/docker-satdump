@@ -2,9 +2,9 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/rpatel3001/docker-satdump/deploy.yml?branch=master)](https://github.com/rpatel3001/docker-satdump/actions/workflows/deploy.yml)
 [![Discord](https://img.shields.io/discord/734090820684349521)](https://discord.gg/sTf9uYF)
 
-A Docker image with satdump installed. Currently it runs an arbitrary command on startup, but that will change in the future.
+A Docker image with satdump installed. Currently it runs an arbitrary command on startup, but that may change in the future.
 
-There is a python script also run at startup which takes the satdump UDP JSON messages and reformats them as acarshub compatible JSON.
+There is a python script also run at startup which enriches the satdump JSON with ground station names, frequency and level information, and more.
 
 Under active development, everything is subject to change without notice.
 
@@ -29,12 +29,11 @@ docker logs -f satdump | grep -v "(D)" | grep -v "Table Broadcast" | grep -v "Re
 | `LOG_OUT_JSON`      | Set to any value to log the reformatted JSON output to stdout.                                                               | Unset |
 | `LOG_OUT_JSON_FILT` | Set to any value to log the reformatted JSON output to stdout, after filtering out non-ACARS messages.                       | Unset |
 | `OUTPUT_ACARS_ONLY` | Set to any value to prevent outputting JSON for non-ACARS messages to ease the load on your Acarshub instance a little.      | Unset |
+| `STATION_ID`        | The station ID to set on output messages.                                                                                    | Unset |
 
 ## Docker Compose
 
 ```
-version: "3"
-
 services:
   satdump:
     container_name: satdump
@@ -48,8 +47,8 @@ services:
       - ./vfo.json:/vfo.json
       - ./Inmarsat.json:/usr/share/satdump/pipelines/Inmarsat.json
     environment:
-      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
-#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json 2>&1 | grep -v "Invalid CRC!"
+      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json --http_server 0.0.0.0:5000 2>&1 | grep -v "Invalid CRC!"
+#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json --http_server 0.0.0.0:5000 2>&1 | grep -v "Invalid CRC!"
       - STATION_ID=XX-YYY-IMSL-98W
 
   acarshub:
