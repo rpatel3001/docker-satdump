@@ -168,7 +168,7 @@ while True:
       if id := data.get("source", {}).get("station_id"):
         if sigjs := snrjs.get(id):
           if level := sigjs.get("signal"):
-            out["level"] = f"{float(level):.2f}"
+            out["level"] = f"{float(level):.1f}"
         else:
           idint = int(id)
           bestk = None
@@ -178,8 +178,9 @@ while True:
             if abs(idint-kint) < bestdiff:
               bestdiff = abs(idint-kint)
               bestk = k
-          print(f"best match for {id} is {bestk}")
-          out["level"] = f"{float(snrjs[k]['signal']):.2f}"
+          if k:
+            print(f"best match for {id} is {bestk}")
+            out["level"] = f"{float(snrjs[k]['signal']):.1f}"
     except:
       print("Couldn't set level")
       print(traceback.format_exc())
