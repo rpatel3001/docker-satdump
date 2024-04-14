@@ -173,6 +173,7 @@ while True:
           idint = int(id)
           bestk = None
           bestdiff = 1e6
+          k = None
           for k,v in snrjs.items():
             kint = int(k)
             if abs(idint-kint) < bestdiff:
