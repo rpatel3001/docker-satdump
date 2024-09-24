@@ -57,7 +57,7 @@ RUN set -x && \
     make install && \
     ldconfig && \
     popd && popd && \
-    # deplot satdump
+    # deploy satdump
     git clone https://github.com/altillimity/satdump.git /src/satdump && \
     pushd /src/satdump && \
     git apply /tmp/satdump.patch && \
@@ -66,7 +66,7 @@ RUN set -x && \
     xargs -a /src/satdump/packages.runner apt install -qy && \
     mkdir build && \
     pushd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF -DBUILD_ZIQ=OFF .. && \
+    cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI=OFF .. && \
     make -j`nproc` && \
     make install && \
     popd && popd && \

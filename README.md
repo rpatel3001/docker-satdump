@@ -50,7 +50,7 @@ services:
       - ./Inmarsat.json:/usr/share/satdump/pipelines/Inmarsat.json
     environment:
       - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtltcp --ip_address 10.0.0.114 --port 7373 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json --http_server 0.0.0.0:5000 2>&1 | grep -v "Invalid CRC!"
-#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 0 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json --http_server 0.0.0.0:5000 2>&1 | grep -v "Invalid CRC!"
+#      - RUN_CMD=satdump live inmarsat_aero_6 /tmp/satdump_out --source rtlsdr --source_id 00000000 --gain 49 --samplerate 1.536e6 --frequency 1545.6e6 --multi_vfo /vfo.json --http_server 0.0.0.0:5000 2>&1 | grep -v "Invalid CRC!"
       - STATION_ID=XX-YYY-IMSL-98W
 
   acarshub:
