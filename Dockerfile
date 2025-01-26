@@ -1,4 +1,4 @@
-FROM ghcr.io/sdr-enthusiasts/docker-baseimage:rtlsdr
+FROM ghcr.io/sdr-enthusiasts/docker-baseimage:soapy-full
 
 ENV NO_SDRPLAY_API="true"
 
@@ -28,35 +28,6 @@ RUN set -x && \
     apt-get install -y --no-install-recommends \
     "${KEPT_PACKAGES[@]}" \
     "${TEMP_PACKAGES[@]}" && \
-    # deploy libmiri
-    git clone https://github.com/ericek111/libmirisdr-5.git /src/libmirisdr-5 && \
-    pushd /src/libmirisdr-5 && \
-    mkdir build && \
-    pushd build && \
-    cmake .. && \
-    make && \
-    make install && \
-    popd && popd && \
-    # build libairspy
-    git clone https://github.com/airspy/airspyhf.git /src/airspyhf && \
-    pushd /src/airspyhf && \
-    mkdir -p /src/airspyhf/build && \
-    pushd /src/airspyhf/build && \
-    cmake ../ -DCMAKE_BUILD_TYPE=Release -DINSTALL_UDEV_RULES=ON && \
-    make && \
-    make install && \
-    ldconfig && \
-    popd && popd && \
-    # deploy airspyone host
-    git clone https://github.com/airspy/airspyone_host.git /src/airspyone_host && \
-    pushd /src/airspyone_host && \
-    mkdir -p /src/airspyone_host/build && \
-    pushd /src/airspyone_host/build && \
-    cmake ../ -DINSTALL_UDEV_RULES=ON && \
-    make && \
-    make install && \
-    ldconfig && \
-    popd && popd && \
     # deploy satdump
     git clone https://github.com/altillimity/satdump.git /src/satdump && \
     pushd /src/satdump && \
