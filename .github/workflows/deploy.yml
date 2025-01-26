@@ -20,9 +20,6 @@ jobs:
     - name: "Build:checkout"
       uses: actions/checkout@v3
 
-    - name: "Build:qemu"
-      uses: docker/setup-qemu-action@v2
-
     - name: "Build:buildx"
       uses: docker/setup-buildx-action@v2
 
