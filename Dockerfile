@@ -42,6 +42,7 @@ RUN set -x && \
     make install && \
     popd && popd && \
     xargs -a /src/satdump/packages.builder apt purge -qy && \
+    ln -s /usr/lib/satdump/ /usr/local/lib/satdump && \
     # Clean up
     apt-get remove -y "${TEMP_PACKAGES[@]}" && \
     apt-get autoremove -y && \
