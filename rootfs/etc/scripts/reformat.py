@@ -178,7 +178,7 @@ while True:
             if abs(idint-kint) < bestdiff:
               bestdiff = abs(idint-kint)
               bestk = k
-          if bestk and snrjs[k]['signal']:
+          if bestk and snrjs[bestk]['signal']:
             print(f"best match for {id} is {bestk}")
             out["level"] = f"{float(snrjs[bestk]['signal']):.1f}"
     except:
