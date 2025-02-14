@@ -219,7 +219,7 @@ while True:
         print(f"ground station {gsa} not found")
       out["fromaddr_decoded"] = fromaddr
 
-    if (getenv("OUTPUT_ACARS_ONLY") == False or "ACARS" == out.get("msg_name")) and (getenv("OUTPUT_NONEMPTY_ONLY") == False or out.get("message")):
+    if (getenv("OUTPUT_ACARS_ONLY") is None or "ACARS" == out.get("msg_name")) and (getenv("OUTPUT_NONEMPTY_ONLY") is None or out.get("message")):
       if (getenv("LOG_OUT_JSON")) or (getenv("LOG_OUT_JSON_FILT") and "ACARS" == out.get("msg_name")):
         pprint(out)
         print()
