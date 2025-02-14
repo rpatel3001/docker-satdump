@@ -173,15 +173,14 @@ while True:
           idint = int(id)
           bestk = None
           bestdiff = 1e6
-          k = None
           for k,v in snrjs.items():
             kint = int(k)
             if abs(idint-kint) < bestdiff:
               bestdiff = abs(idint-kint)
               bestk = k
-          if k:
+          if bestk and snrjs[k]['signal']:
             print(f"best match for {id} is {bestk}")
-            out["level"] = f"{float(snrjs[k]['signal']):.1f}"
+            out["level"] = f"{float(snrjs[bestk]['signal']):.1f}"
     except:
       print("Couldn't set level")
       print(traceback.format_exc())
